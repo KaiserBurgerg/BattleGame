@@ -1,0 +1,6 @@
+{
+  "name": "BEAST ARENA LIVE: Löwen-Clan vs. Wolfs-Rudel",
+  "description": "Interaktives 9:16 TikTok-Livestream-Spiel mit prozeduralem 2.5D-Tier-Renderer, Kampf-Physik, Sprachausgabe und Live-Simulator.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

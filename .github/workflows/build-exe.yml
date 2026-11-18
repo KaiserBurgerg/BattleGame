@@ -1,0 +1,44 @@
+name: Build Windows EXE & Cleanup Old Runs
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  build-windows-exe:
+    name: Build Windows Installer (.exe)
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install App Dependencies
+        run: npm install
+
+      - name: Build Web Application (Vite)
+        run: npm run build
+
+      - name: Package Windows NSIS Installer (.exe with Path Selection & Admin Mode)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx --yes electron-builder --win nsis --x64 --config electron-builder.yml --publish never
+
+      - name: Upload Windows .EXE Installer for Download
+        uses: actions/upload-artifact@v4
+        with:
+          name: Beast-Arena-Live-Windows-EXE
+          path: release/*.exe
+          if-no-files-found: error
+          retention-days: 1

@@ -1,0 +1,26 @@
+appId: com.beastarena.live
+productName: Beast Arena Live
+directories:
+  output: release
+files:
+  - dist/**/*
+  - electron/**/*
+  - package.json
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  # Garantiert, dass die .exe immer als Administrator ausgeführt wird:
+  requestedExecutionLevel: requireAdministrator
+  artifactName: Beast-Arena-Live-Setup-${version}.exe
+nsis:
+  # Deaktiviert 1-Klick-Installation, damit der Installations-Assistent startet:
+  oneClick: false
+  # Erlaubt dem Nutzer am Anfang der Installation den Dateipfad frei auszusuchen:
+  allowToChangeInstallationDirectory: true
+  perMachine: true
+  allowElevation: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Beast Arena Live

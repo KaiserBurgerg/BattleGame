@@ -1,0 +1,74 @@
+name: Auto-Delete Workflows & Artifacts Older Than 3 Hours
+
+on:
+  schedule:
+    # Läuft automatisch jede Stunde, um Speicherplatz auf GitHub freizuhalten
+    - cron: '0 * * * *'
+  workflow_run:
+    workflows: ['Build Windows EXE & Cleanup Old Runs']
+    types:
+      - completed
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  cleanup-old-workflows:
+    name: Delete Workflow Runs & Artifacts (> 3 Hours Old)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Delete Artifacts & Workflow Runs older than 3 hours
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const MAX_AGE_MS = 3 * 60 * 60 * 1000; // 3 Stunden in Millisekunden
+            const now = Date.now();
+            const { owner, repo } = context.repo;
+
+            // 1. Alle Artefakte prüfen und nach 3 Stunden löschen
+            const artifacts = await github.paginate(
+              github.rest.actions.listArtifactsForRepo,
+              { owner, repo, per_page: 100 }
+            );
+
+            for (const artifact of artifacts) {
+              const createdAt = new Date(artifact.created_at).getTime();
+              if (now - createdAt > MAX_AGE_MS) {
+                try {
+                  await github.rest.actions.deleteArtifact({
+                    owner,
+                    repo,
+                    artifact_id: artifact.id,
+                  });
+                  console.log(`Deleted expired artifact: ${artifact.name} (${artifact.id})`);
+                } catch (err) {
+                  console.log(`Could not delete artifact ${artifact.id}: ${err.message}`);
+                }
+              }
+            }
+
+            // 2. Alle abgeschlossenen Workflow-Runs prüfen und nach 3 Stunden löschen
+            const runs = await github.paginate(
+              github.rest.actions.listWorkflowRunsForRepo,
+              { owner, repo, per_page: 100 }
+            );
+
+            for (const run of runs) {
+              if (run.id === context.runId) continue;
+              const createdAt = new Date(run.created_at).getTime();
+              if (now - createdAt > MAX_AGE_MS && run.status === 'completed') {
+                try {
+                  await github.rest.actions.deleteWorkflowRun({
+                    owner,
+                    repo,
+                    run_id: run.id,
+                  });
+                  console.log(`Deleted expired workflow run: ${run.id}`);
+                } catch (err) {
+                  console.log(`Could not delete workflow run ${run.id}: ${err.message}`);
+                }
+              }
+            }

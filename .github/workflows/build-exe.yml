@@ -24,7 +24,7 @@ jobs:
           node-version: '22'
 
       - name: Install App Dependencies
-        run: npm install --no-audit --no-fund
+        run: npm install --legacy-peer-deps --no-audit --no-fund
 
       - name: Typecheck Application
         run: npm run lint
@@ -33,7 +33,7 @@ jobs:
         run: npm run build
 
       - name: Install Electron & Builder for Windows Packaging
-        run: npm install --save-dev --no-audit --no-fund electron@^33.2.0 electron-builder@^25.1.8
+        run: npm install --save-dev --legacy-peer-deps --no-audit --no-fund electron@^33.2.0 electron-builder@^25.1.8
 
       - name: Package Windows NSIS Installer (.exe with Path Selection & Admin Mode)
         env:

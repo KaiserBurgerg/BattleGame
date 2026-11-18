@@ -22,18 +22,24 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm'
 
       - name: Install App Dependencies
-        run: npm install
+        run: npm install --no-audit --no-fund
+
+      - name: Typecheck Application
+        run: npm run lint
 
       - name: Build Web Application (Vite)
         run: npm run build
 
+      - name: Install Electron & Builder for Windows Packaging
+        run: npm install --save-dev --no-audit --no-fund electron@^33.2.0 electron-builder@^25.1.8
+
       - name: Package Windows NSIS Installer (.exe with Path Selection & Admin Mode)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx --yes electron-builder --win nsis --x64 --config electron-builder.yml --publish never
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: npx electron-builder --win nsis --x64 --config electron-builder.yml --publish never
 
       - name: Upload Windows .EXE Installer for Download
         uses: actions/upload-artifact@v4
